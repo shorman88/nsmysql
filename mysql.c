@@ -12,7 +12,7 @@
  * This driver is derived from the nssolid driver.
  */
 
-static char     rcsid[] = "$Id: mysql.c,v 1.3 2001/10/19 03:37:26 dossy Exp $";
+static char     rcsid[] = "$Id: mysql.c,v 1.4 2002/07/17 17:43:05 dossy Exp $";
 
 #include "ns.h"
 
@@ -49,8 +49,8 @@ static Ns_Set  *Ns_MySQL_BindRow(Ns_DbHandle *handle);
 
 static void     Log(Ns_DbHandle *handle, MYSQL *mysql);
 
-/* Include tablename in resultset?  Default is yes. */
-static int      include_tablenames = 1;
+/* Include tablename in resultset?  Default is no. */
+static int      include_tablenames = 0;
 
 static Ns_DbProc mysqlProcs[] = {
     { DbFn_Name,         (void *) Ns_MySQL_Name },
