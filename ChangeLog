@@ -1,3 +1,14 @@
+2001-02-17  Dossy  <dossy@panoptic.com>
+
+    * mysql.c: updated mysql.c Ns_MySQL_BindRow() and Ns_MySQL_Select()
+    to include the table name as part of the key of the ns_set resultset.
+
+    * mysql.c: updated mysql.c with new [ns_mysql include_tablenames] feature
+
+    * README: updated README about libz and pointed FAQ at the wiki
+
+    * Makefile: updated Makefile with stuff about maybe needing -lz for libz
+
 2000-08-31  Dossy  <dossy@panoptic.com>
 
 	* mysql.c:
