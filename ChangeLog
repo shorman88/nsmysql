@@ -1,5 +1,12 @@
 2003-07-09  Elizabeth Thomas  <eathomas93@aol.com>
 
+    * mysql.c: add include of nsdb.h for aolserver 4.0 compatibility. 
+    aolserver pre-4.0 users should use tags prior to nsmysql_v1
+
+    * Tagged: nsmysql_v1
+
+2003-07-09  Elizabeth Thomas  <eathomas93@aol.com>
+
     * Makefile: add variables which can control behavior of make without
     requiring edits to the file
 
