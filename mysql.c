@@ -12,9 +12,10 @@
  * This driver is derived from the nssolid driver.
  */
 
-static char     rcsid[] = "$Id: mysql.c,v 1.4 2002/07/17 17:43:05 dossy Exp $";
+static char     rcsid[] = "$Id: mysql.c,v 1.5 2003/07/09 20:53:52 elizthom Exp $";
 
 #include "ns.h"
+#include "nsdb.h"
 
 /* MySQL API headers */
 #include <mysql.h>
