@@ -1,3 +1,17 @@
+2001-10-18  Dossy  <dossy@panoptic.com>
+
+    * mysql.c: removed use of mutex.  Switched to using libmysqlclient_r
+    which is thread safe, and since we use db connection pools (no two
+    threads share the same connection) even mysql_real_connect() needs
+    no mutex.  Thanks to Ian Fink <ifink@wayport.net> for inspiring
+    me to finally make this change.
+
+    * mysql.c: changed Tcl_DStrings to Ns_DStrings, thanks to Ian
+    Fink.
+
+    * mysql.c: improved parsing of handle->datasource.  Thanks to
+    Ian Fink for ideas.
+
 2001-02-17  Dossy  <dossy@panoptic.com>
 
     * mysql.c: updated mysql.c Ns_MySQL_BindRow() and Ns_MySQL_Select()

@@ -1,5 +1,5 @@
 ========================================================================
-Panoptic AOLserver MySQL Driver v0.5
+Panoptic AOLserver MySQL Driver v0.6
 an internal database driver for AOLserver 3
 Copyright (C) 2000-2001 Panoptic Computer Network
 ========================================================================
@@ -13,7 +13,7 @@ Copyright (C) 2000-2001 Panoptic Computer Network
   5.  Frequently Asked Questions (FAQs).
 
 ========================================================================
-$Id: README,v 1.2 2001/02/18 02:37:27 dossy Exp $
+$Id: README,v 1.3 2001/10/19 03:37:26 dossy Exp $
 
 1.  What is this?
 
@@ -32,18 +32,11 @@ is a fairly easy exercise.
 
 This module has been tested with:
 
-- AOLserver 3.0 beta 5, MySQL 3.21.29-gamma, under x86 Linux 2.2.13.
-- AOLserver 3.0 beta 6.1, MySQL 3.22.30, under x86 Linux 2.2.14.
-- AOLserver 3.0 RC1, MySQL 3.22.30, under x86 Linux 2.2.14.
-- AOLserver 3.0 RC1, MySQL 3.22.30, under Windows 98.
-- AOLserver 3.0, MySQL 3.22.30, under x86 Linux 2.2.14.
-- AOLserver 3.0, MySQL 3.22.30, under Windows 98.
-- AOLserver 3.1 beta, MySQL 3.22.30, under x86 Linux 2.2.14.
-- AOLserver 3.2, MySQL 3.22.30, under x86 Linux 2.2.17.
+  AOLserver 3.4.2, MySQL 3.23.36, under x86 Linux 2.4.10 glibc 2.2.
 
 The driver may or may not work on older versions, as it is modified
 to work with the most recent releases and therefore may break
-backwards compatibility.
+backwards compatibility.  If this is an issue, please contact me.
 
 I make no guarantees that this will work "out of the box" on other
 platforms, but I can't see why not.  If you find that things need
@@ -153,7 +146,7 @@ Step 3:  Compile the driver.
   and don't want to go overwriting it all with a new $srcdir/root,
   then you can tell make to copy the driver to the right place:
 
-  $ make install ROOTDIR=/path/to/your/installation
+  $ make install PREFIX=/path/to/your/installation
 
 Step 4:  Tell AOLserver about it.
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile,v 1.2 2001/02/18 02:37:26 dossy Exp $
+# $Id: Makefile,v 1.3 2001/10/19 03:37:26 dossy Exp $
 #
 
 NSHOME    =  ../aolserver
@@ -30,7 +30,7 @@ HDRS     =
 #
 # Extra libraries
 #
-MODLIBS  =  -R$(MYSQL_LIBDIR) -L$(MYSQL_LIBDIR) -lmysqlclient
+MODLIBS  =  -R$(MYSQL_LIBDIR) -L$(MYSQL_LIBDIR) -lmysqlclient_r
 
 # Uncomment the next line if you have problems relating to
 # "compress" ...
