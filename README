@@ -1,7 +1,7 @@
 ========================================================================
-Panoptic AOLserver MySQL Driver v0.4
-an internal driver for AOLserver 3
-Copyright (C) 2000 Panoptic Computer Network
+Panoptic AOLserver MySQL Driver v0.5
+an internal database driver for AOLserver 3
+Copyright (C) 2000-2001 Panoptic Computer Network
 ========================================================================
 
   Table of Contents
@@ -13,7 +13,7 @@ Copyright (C) 2000 Panoptic Computer Network
   5.  Frequently Asked Questions (FAQs).
 
 ========================================================================
-$Id: README,v 1.1 2000/10/25 01:14:19 dossy Exp $
+$Id: README,v 1.2 2001/02/18 02:37:27 dossy Exp $
 
 1.  What is this?
 
@@ -39,6 +39,7 @@ This module has been tested with:
 - AOLserver 3.0, MySQL 3.22.30, under x86 Linux 2.2.14.
 - AOLserver 3.0, MySQL 3.22.30, under Windows 98.
 - AOLserver 3.1 beta, MySQL 3.22.30, under x86 Linux 2.2.14.
+- AOLserver 3.2, MySQL 3.22.30, under x86 Linux 2.2.17.
 
 The driver may or may not work on older versions, as it is modified
 to work with the most recent releases and therefore may break
@@ -115,6 +116,24 @@ Step 2:  Configure the Makefile (if necessary).
   where they are installed by editing MYSQL_LIBDIR And
   MYSQL_INCDIR, respectively.
 
+  I've recently received complaints that there's some problem
+  with "uncompress" being undefined.  The exact error message
+  looks something like this in your logs/server.log file:
+
+    Warning: modload: failed to load '/some/path/nsmysql.so':
+    '/some/path/nsmysql.so: undefined symbol: uncompress'
+  
+  This has to do with the newer MySQL client library using
+  libz for compression.  Uncomment the line in the Makefile
+  that looks like:
+
+  MODLIBS  +=  -lz
+
+  Optionally, you may need to specify where your libz.{a,so}
+  file lives.  Use something that looks like:
+
+  MODLIBS  +=  -L/path/to/libz -lz
+
 Step 3:  Compile the driver.
 
   Simple.  If you're reading this README, chances are you're
@@ -183,7 +202,13 @@ ns_param Pools        *
 
 5.  Frequently Asked Questions (FAQs).
 
-None yet!
+The FAQ is maintained on the AOLserver Wiki at:
+
+  http://panoptic.com/wiki/aolserver
+  
+The nsmysql FAQ page is:
+
+  http://panoptic.com/wiki/aolserver/nsmysqlFAQ
 
 ========================================================================
 EOF

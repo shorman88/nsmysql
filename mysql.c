@@ -1,6 +1,6 @@
 /*
  * MySQL internal driver for AOLserver 3
- * Copyright (C) 2000 Panoptic Computer Network
+ * Copyright (C) 2000-2001 Panoptic Computer Network
  * Dossy <dossy@panoptic.com>
  *
  * AOLserver    http://www.aolserver.com/
@@ -11,11 +11,12 @@
  * - AOLserver 3.0rc1, MySQL 3.22.30, Linux 2.2.14 glibc 2.1.
  * - AOLserver 3.0rc1, MySQL 3.22.30, Win98.
  * - AOLserver 3.1 beta, MySQL 3.22.30, Linux 2.2.14 glibc 2.1.
+ * - AOLserver 3.2, MySQL 3.22.30, Linux 2.2.17 glibc 2.2.
  *
  * This driver is derived from the nssolid driver.
  */
 
-static char     rcsid[] = "$Id: mysql.c,v 1.1 2000/10/25 01:14:19 dossy Exp $";
+static char     rcsid[] = "$Id: mysql.c,v 1.2 2001/02/18 02:37:27 dossy Exp $";
 
 #include "ns.h"
 
@@ -53,6 +54,9 @@ static Ns_Set  *Ns_MySQL_BindRow(Ns_DbHandle *handle);
 static int      Ns_MySQL_Shutdown(MYSQL *mysql);
 static void     Log(Ns_DbHandle *handle, MYSQL *mysql);
 
+/* Include tablename in resultset?  Default is yes. */
+static int      include_tablenames = 1;
+
 /*
  * thread safety mutex for the following unsafe MySQL operation:
  * mysql_query() / mysql_store_result()
@@ -87,17 +91,17 @@ Ns_DbDriverInit(char *hDriver, char *configPath)
         return NS_ERROR;
     }
 
-	/* initialize the mutex lock */
-	Ns_MutexSetName(&mysql_lock, "mysql_lock");
+    /* initialize the mutex lock */
+    Ns_MutexSetName(&mysql_lock, "mysql_lock");
 
-	/*
+    /*
     if (mysql_init(&dbh) == NULL) {
         Ns_Log(Error,
             "Ns_MySQL_DriverInit(%s):  Could not initialize the %s driver.",
             hDriver, mysql_driver_name);
         return NS_ERROR;
     }
-	*/
+    */
 
     if (Ns_DbRegisterDriver(hDriver, &(mysqlProcs[0])) != NS_OK) {
         Ns_Log(Error,
@@ -106,10 +110,12 @@ Ns_DbDriverInit(char *hDriver, char *configPath)
         return NS_ERROR;
     }
 
-	Ns_Log (Notice, "Ns_MySQL_DriverInit(%s):  Loaded %s, built on %s at %s.",
-		hDriver, mysql_driver_version, __DATE__, __TIME__);
+    Ns_Log (Notice, "Ns_MySQL_DriverInit(%s):  Loaded %s, built on %s at %s.",
+    	hDriver, mysql_driver_version, __DATE__, __TIME__);
 
-    /* Ns_RegisterShutdown((Ns_Callback *) Ns_MySQL_Shutdown, &global_handle); */
+    /*
+    Ns_RegisterShutdown((Ns_Callback *) Ns_MySQL_Shutdown, &global_handle);
+    */
 
     return NS_OK;
 }
@@ -194,12 +200,12 @@ Ns_MySQL_OpenDb(Ns_DbHandle *handle)
 
     client_flag = 0;
 
-	/* start critical section */
-	Ns_MutexLock(&mysql_lock);
+    /* start critical section */
+    Ns_MutexLock(&mysql_lock);
 
     dbh = mysql_init(NULL);
     if (dbh == NULL) {
-		Ns_MutexUnlock(&mysql_lock);
+    	Ns_MutexUnlock(&mysql_lock);
         return NS_ERROR;
     }
 
@@ -209,8 +215,8 @@ Ns_MySQL_OpenDb(Ns_DbHandle *handle)
 
     if (! mysql_real_connect(dbh, host, handle->user,
         handle->password, db, tcp_port, unix_socket, client_flag)) {
-		Log(handle, dbh);
-		Ns_MutexUnlock(&mysql_lock);
+    	Log(handle, dbh);
+    	Ns_MutexUnlock(&mysql_lock);
         return NS_ERROR;
     }
 
@@ -221,12 +227,12 @@ Ns_MySQL_OpenDb(Ns_DbHandle *handle)
     rc = mysql_select_db((MYSQL *) handle->connection, db);
     Log(handle, (MYSQL *) handle->connection);
     if (rc) {
-		Ns_MutexUnlock(&mysql_lock);
+    	Ns_MutexUnlock(&mysql_lock);
         return NS_ERROR;
     }
 
-	Ns_MutexUnlock(&mysql_lock);
-	/* end critical section */
+    Ns_MutexUnlock(&mysql_lock);
+    /* end critical section */
 
     return NS_OK;
 }
@@ -253,18 +259,18 @@ Ns_MySQL_DML(Ns_DbHandle *handle, char *sql)
 
     status = NS_OK;
 
-	/* start critical section */
-	Ns_MutexLock(&mysql_lock);
+    /* start critical section */
+    Ns_MutexLock(&mysql_lock);
 
     rc = mysql_query((MYSQL *) handle->connection, sql);
     Log(handle, (MYSQL *) handle->connection);
     if (rc) {
-		Ns_MutexUnlock(&mysql_lock);
+    	Ns_MutexUnlock(&mysql_lock);
         return NS_ERROR;
     }
 
-	Ns_MutexUnlock(&mysql_lock);
-	/* end critical section */
+    Ns_MutexUnlock(&mysql_lock);
+    /* end critical section */
 
     return status;
 }
@@ -285,28 +291,25 @@ Ns_MySQL_Select(Ns_DbHandle *handle, char *sql)
     if (handle->verbose)
         Ns_Log(Notice, "Ns_MySQL_Select called.");
 
-	/* start critical section */
-	Ns_MutexLock(&mysql_lock);
+    /* start critical section */
+    Ns_MutexLock(&mysql_lock);
 
     rc = mysql_query((MYSQL *) handle->connection, sql);
     Log(handle, (MYSQL *) handle->connection);
     if (rc) {
-		Ns_MutexUnlock(&mysql_lock);
+    	Ns_MutexUnlock(&mysql_lock);
         return NULL;
     }
 
     result = mysql_store_result((MYSQL *) handle->connection);
     Log(handle, (MYSQL *) handle->connection);
     if (result == NULL) {
-		Ns_MutexUnlock(&mysql_lock);
+    	Ns_MutexUnlock(&mysql_lock);
         return NULL;
     }
 
     handle->statement = (void *) result;
     handle->fetchingRows = 1;
-
-	/* Ns_MutexUnlock(&mysql_lock); */
-	/* end critical section */
 
     numcols = mysql_num_fields((MYSQL_RES *) handle->statement);
     Log(handle, (MYSQL *) handle->connection);
@@ -317,7 +320,7 @@ Ns_MySQL_Select(Ns_DbHandle *handle, char *sql)
         mysql_free_result((MYSQL_RES *) handle->statement);
         handle->statement = NULL;
         handle->fetchingRows = 0;
-		Ns_MutexUnlock(&mysql_lock);
+    	Ns_MutexUnlock(&mysql_lock);
         return NULL;
     }
 
@@ -326,7 +329,7 @@ Ns_MySQL_Select(Ns_DbHandle *handle, char *sql)
     for (i = 0; i < numcols; i++) {
         Tcl_DStringInit(&key);
 
-        if (strlen(fields[i].table) > 0) {
+        if (include_tablenames && strlen(fields[i].table) > 0) {
             Tcl_DStringAppend(&key, fields[i].table, strlen(fields[i].table));
             Tcl_DStringAppend(&key, ".", 1);
         }
@@ -337,8 +340,8 @@ Ns_MySQL_Select(Ns_DbHandle *handle, char *sql)
         Tcl_DStringFree(&key);
     }
 
-	Ns_MutexUnlock(&mysql_lock);
-	/* end critical section */
+    Ns_MutexUnlock(&mysql_lock);
+    /* end critical section */
 
     return (Ns_Set *) handle->row;
 }
@@ -443,42 +446,34 @@ Ns_MySQL_Exec(Ns_DbHandle *handle, char *sql)
 
     status = NS_OK;
 
-	/* start critical section */
-    if (handle->verbose)
-		Ns_Log(Notice, "Ns_MySQL_Exec() entering critical section.");
-	Ns_MutexLock(&mysql_lock);
-    if (handle->verbose)
-		Ns_Log(Notice, "Ns_MySQL_Exec() entered critical section.");
+    /* start critical section */
+    Ns_MutexLock(&mysql_lock);
 
     rc = mysql_query((MYSQL *) handle->connection, sql);
     Log(handle, (MYSQL *) handle->connection);
     if (rc) {
-		Ns_MutexUnlock(&mysql_lock);
+    	Ns_MutexUnlock(&mysql_lock);
         return NS_ERROR;
     }
 
     result = mysql_store_result((MYSQL *) handle->connection);
     Log(handle, (MYSQL *) handle->connection);
 
-	fieldcount = mysql_field_count((MYSQL *) handle->connection);
+    fieldcount = mysql_field_count((MYSQL *) handle->connection);
     Log(handle, (MYSQL *) handle->connection);
 
-    if (handle->verbose)
-		Ns_Log(Notice, "Ns_MySQL_Exec() leaving critical section.");
-	Ns_MutexUnlock(&mysql_lock);
-    if (handle->verbose)
-		Ns_Log(Notice, "Ns_MySQL_Exec() left critical section.");
-	/* end critical section */
+    Ns_MutexUnlock(&mysql_lock);
+    /* end critical section */
 
     if (result == NULL) {
-		if (fieldcount == 0) {	
-			if (handle->verbose)
-				Ns_Log(Notice, "Ns_MySQL_Exec(status) = NS_DML");
-			return NS_DML;
-		} else {
-			Ns_Log(Error, "Ns_MySQL_Exec() has columns but result set is NULL");
-			return NS_ERROR;
-		}
+    	if (fieldcount == 0) {	
+    		if (handle->verbose)
+    			Ns_Log(Notice, "Ns_MySQL_Exec(status) = NS_DML");
+    		return NS_DML;
+    	} else {
+    		Ns_Log(Error, "Ns_MySQL_Exec() has columns but result set is NULL");
+    		return NS_ERROR;
+    	}
     }
 
     numcols = mysql_num_fields(result);
@@ -507,7 +502,7 @@ Ns_MySQL_BindRow(Ns_DbHandle *handle)
     MYSQL_FIELD    *fields;
     unsigned int    i;
     unsigned int    numcols;
-	Tcl_DString     key;
+    Tcl_DString     key;
 
     if (handle->verbose)
         Ns_Log(Notice, "Ns_MySQL_BindRow called.");
@@ -520,7 +515,7 @@ Ns_MySQL_BindRow(Ns_DbHandle *handle)
     for (i = 0; i < numcols; i++) {
         Tcl_DStringInit(&key);
 
-        if (strlen(fields[i].table) > 0) {
+        if (include_tablenames && strlen(fields[i].table) > 0) {
             Tcl_DStringAppend(&key, fields[i].table, strlen(fields[i].table));
             Tcl_DStringAppend(&key, ".", 1);
         }
@@ -677,15 +672,14 @@ Ns_MySQL_Cmd(ClientData dummy, Tcl_Interp *interp, int argc, char **argv)
         return TCL_ERROR;
     }
 
-    if (STREQ(argv[1], "version")) {
-        /* == [ns_mysql version $db] == */
-        if (argc != 3) {
+    if (STREQ(argv[1], "include_tablenames")) {
+        /* == [ns_mysql include_tablenames $db (on|off)] == */
+        if (argc != 4) {
             Tcl_AppendResult(interp, "wrong # args: should be \"",
-                argv[0], " version handle\"", NULL);
+                argv[0], " include_tablenames handle boolean\"", NULL);
             return TCL_ERROR;
         }
-        Tcl_SetResult(interp, mysql_driver_version, TCL_STATIC);
-        return TCL_OK;
+        return Tcl_GetBoolean(interp, argv[3], &include_tablenames);
     } else if (STREQ(argv[1], "list_dbs")) {
         /* == [ns_mysql list_dbs $db ?wild?] == */
         char           *wild;
@@ -700,12 +694,9 @@ Ns_MySQL_Cmd(ClientData dummy, Tcl_Interp *interp, int argc, char **argv)
         } else {
             wild = argv[3];
         }
-        if (Ns_MySQL_List_Dbs(interp, wild, handle) != TCL_OK) {
-            return TCL_ERROR;
-        }
-        return TCL_OK;
+        return Ns_MySQL_List_Dbs(interp, wild, handle);
     } else if (STREQ(argv[1], "list_tables")) {
-        /* == [ns_mysql list_tables $db] == */
+        /* == [ns_mysql list_tables $db ?wild?] == */
         char           *wild;
 
         if (argc < 3 || argc > 4) {
@@ -718,21 +709,7 @@ Ns_MySQL_Cmd(ClientData dummy, Tcl_Interp *interp, int argc, char **argv)
         } else {
             wild = argv[3];
         }
-        if (Ns_MySQL_List_Tables(interp, wild, handle) != TCL_OK) {
-            return TCL_ERROR;
-        }
-        return TCL_OK;
-    } else if (STREQ(argv[1], "select_db")) {
-        /* == [ns_mysql select_db $db database] == */
-        if (argc != 4) {
-            Tcl_AppendResult(interp, "wrong # args: should be \"",
-                argv[0], " select_db handle database\"", NULL);
-            return TCL_ERROR;
-        }
-        if (Ns_MySQL_Select_Db(interp, argv[3], handle) != TCL_OK) {
-            return TCL_ERROR;
-        }
-        return TCL_OK;
+        return Ns_MySQL_List_Tables(interp, wild, handle);
     } else if (STREQ(argv[1], "resultrows")) {
         /* == [ns_mysql resultrows $db] == */
         if (argc != 3) {
@@ -740,9 +717,23 @@ Ns_MySQL_Cmd(ClientData dummy, Tcl_Interp *interp, int argc, char **argv)
                 argv[0], " resultrows handle\"", NULL);
             return TCL_ERROR;
         }
-        if (Ns_MySQL_Resultrows(interp, handle) != TCL_OK) {
+        return Ns_MySQL_Resultrows(interp, handle);
+    } else if (STREQ(argv[1], "select_db")) {
+        /* == [ns_mysql select_db $db database] == */
+        if (argc != 4) {
+            Tcl_AppendResult(interp, "wrong # args: should be \"",
+                argv[0], " select_db handle database\"", NULL);
             return TCL_ERROR;
         }
+        return Ns_MySQL_Select_Db(interp, argv[3], handle);
+    } else if (STREQ(argv[1], "version")) {
+        /* == [ns_mysql version $db] == */
+        if (argc != 3) {
+            Tcl_AppendResult(interp, "wrong # args: should be \"",
+                argv[0], " version handle\"", NULL);
+            return TCL_ERROR;
+        }
+        Tcl_SetResult(interp, mysql_driver_version, TCL_STATIC);
         return TCL_OK;
     } else {
         Tcl_AppendResult(interp, "unknown command \"", argv[1],
