@@ -3,6 +3,8 @@
     * Makefile: add variables which can control behavior of make without
     requiring edits to the file
 
+    * Tagged: nsmysql_v0_7
+
 2001-10-18  Dossy  <dossy@panoptic.com>
 
     * mysql.c: removed use of mutex.  Switched to using libmysqlclient_r
