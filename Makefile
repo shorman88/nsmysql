@@ -1,8 +1,9 @@
 #
-# $Id: Makefile,v 1.3 2001/10/19 03:37:26 dossy Exp $
+# $Id: Makefile,v 1.4 2003/07/09 20:50:37 elizthom Exp $
 #
 
-NSHOME    =  ../aolserver
+AOLSERVER =  ../aolserver
+NSHOME    =  $(AOLSERVER)
 
 #
 # Module name
@@ -15,9 +16,12 @@ MOD       =  nsmysql.so
 OBJS      =  mysql.o
 
 #
-# Set this to be the installation prefix of your MySQL installation.
+# Set this to be the installation prefix of your MySQL installation,
+# or you may supply the path on the make command line.
 #
+ifndef MYSQL_PREFIX
 MYSQL_PREFIX = /usr/local
+endif
 
 MYSQL_LIBDIR = $(MYSQL_PREFIX)/lib/mysql
 MYSQL_INCDIR = $(MYSQL_PREFIX)/include/mysql
@@ -30,12 +34,24 @@ HDRS     =
 #
 # Extra libraries
 #
-MODLIBS  =  -R$(MYSQL_LIBDIR) -L$(MYSQL_LIBDIR) -lmysqlclient_r
+ifndef NO_ROPT
+MODLIBS  += -R$(MYSQL_LIBDIR)
+else
+MODLIBS  +=  -L$(MYSQL_LIBDIR) -lmysqlclient_r
+endif
 
-# Uncomment the next line if you have problems relating to
+# Specify NEED_ZLIB=1 if you have problems relating to
 # "compress" ...
+# This will find the libz.so in the standard place, unless you
+# explicitly specify how to get to it via MOD_ZLIBS
 
-# MODLIBS  +=  -lz
+ifdef NEED_ZLIB
+ifdef MOD_ZLIBS
+MODLIBS  += $(MOD_ZLIBS)
+else
+MODLIBS  +=  -lz
+endif
+endif
 
 #
 # Compiler flags
@@ -43,9 +59,10 @@ MODLIBS  =  -R$(MYSQL_LIBDIR) -L$(MYSQL_LIBDIR) -lmysqlclient_r
 CFLAGS   = -I$(MYSQL_INCDIR)
 
 
-include  $(NSHOME)/include/Makefile.module
+include  $(AOLSERVER)/include/Makefile.module
 
-
-# Override linker to use ld(1), gcc doesn't understand -R ...
+ifndef NO_LDOVERRIDE
+# Override linker to use ld(1), if your gcc doesn't understand -R ...
 LDSO     = ld -shared
+endif
 
