@@ -1,0 +1,61 @@
+2000-08-31  Dossy  <dossy@panoptic.com>
+
+	* mysql.c:
+	MSVC++ didn't appreciate "unsigned long long", so I #ifdef WIN32
+	and use "unsigned __int64" which it likes.
+
+	* win32/README, win32/nsmysql.dsp, win32/nsmysql.dsw: New file.
+
+	* README: Minor updates for v0.4.
+
+	* mysql.c: added [ns_mysql resultrows] which returns the number of rows
+	affected by the previous query.
+
+	Fixed the bug in Ns_MySQL_Exec() where mysql_store_result()
+	returns NULL, but the query did not error (as is in the case
+	of some DML statements).  I thought this was fixed in v0.3,
+	but I still didn't get it right.  (Thanks to Thomas Park
+	<thomas@sombasa.com> for the bug report and patches.)
+
+2000-06-02  Dossy  <dossy@panoptic.com>
+
+	* mysql.c:
+	Added mysql_field_count() check in Ns_MySQL_Exec() for the special
+	case where mysql_store_result() returns NULL (no rows returned) but
+	it is not an error (in the case of DML).
+	(Thanks to Midh Mulpuri <midh@PURDUE.EDU> for this bug report and fix.)
+
+	Big fix:  Use of Ns_MutexLock() and Ns_MutexUnlock() to make the driver
+	thread-safe.  Also, moved calling of mysql_init() to the right place
+	and now call it in a thread-safe manner as well.
+	(Thanks to Jack Hong <hong@staff.sina.com> for this bug report and
+	testing assistance.)
+
+2000-03-28  Dossy  <dossy@panoptic.com>
+
+	* mysql.c:
+	mysql_num_fields() was being passed handle->connection incorrectly,
+	should have been the MYSQL_RES structure.
+
+	snprintf() replaced with sprintf() for win32 compatibility
+
+	* Makefile: New Makefile convention for AOLserver 3.0rc1.
+
+2000-03-20  Dossy  <dossy@panoptic.com>
+
+	* Makefile, makefile: MYSQL_PREFIX/_LIBDIR/_INCDIR changes
+	obsoleted $srcdir/third directory structure
+
+	* Makefile, makefile, README: New file.
+
+2000-01-20  Dossy  <dossy@panoptic.com>
+
+	* mysql.c: Revised makefile to no longer use $(THIRD) directory,
+	instead, MYSQL_PREFIX needs to be set in makefile.
+	Added ns_mysql commands: list_dbs, list_tables, select_db.
+
+2000-01-13  Dossy  <dossy@panoptic.com>
+
+	* mysql.c: Initial revision.  Basic functionality implemented, with
+	minimal testing performed.
+

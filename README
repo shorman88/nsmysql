@@ -1,0 +1,189 @@
+========================================================================
+Panoptic AOLserver MySQL Driver v0.4
+an internal driver for AOLserver 3
+Copyright (C) 2000 Panoptic Computer Network
+========================================================================
+
+  Table of Contents
+
+  1.  What is this?
+  2.  Who is responsible?
+  3.  Where do I get it?
+  4.  How do I use it?
+  5.  Frequently Asked Questions (FAQs).
+
+========================================================================
+$Id: README,v 1.1 2000/10/25 01:14:19 dossy Exp $
+
+1.  What is this?
+
+This, my friend, is the MySQL internal driver for AOLserver 3.
+Considering that AOLserver is now open source (hurray!), that means
+people will want to play with it.  Chances are, if you're looking at
+open source tools, you've also considered, or are running MySQL,
+another fine open source product.
+
+Well, since AOLserver's very suitable as a tool for creating
+database-backed web sites, and MySQL is free as well, I thought they'd
+make a good pair.  And, luckily for us, AOLserver was designed in such
+a nice fashion that everything is modular, down to the database
+interface. So, writing a new driver for AOLserver for a new database
+is a fairly easy exercise.
+
+This module has been tested with:
+
+- AOLserver 3.0 beta 5, MySQL 3.21.29-gamma, under x86 Linux 2.2.13.
+- AOLserver 3.0 beta 6.1, MySQL 3.22.30, under x86 Linux 2.2.14.
+- AOLserver 3.0 RC1, MySQL 3.22.30, under x86 Linux 2.2.14.
+- AOLserver 3.0 RC1, MySQL 3.22.30, under Windows 98.
+- AOLserver 3.0, MySQL 3.22.30, under x86 Linux 2.2.14.
+- AOLserver 3.0, MySQL 3.22.30, under Windows 98.
+- AOLserver 3.1 beta, MySQL 3.22.30, under x86 Linux 2.2.14.
+
+The driver may or may not work on older versions, as it is modified
+to work with the most recent releases and therefore may break
+backwards compatibility.
+
+I make no guarantees that this will work "out of the box" on other
+platforms, but I can't see why not.  If you find that things need
+modification to make them work on your platform, please send me
+patches.
+
+========================================================================
+
+2.  Who is responsible?
+
+Well, I guess since I put this together, I'm mostly responsible.
+If it doesn't work, try not to blame me, and instead submit
+patches.  :-)
+
+I'm Dossy <dossy@panoptic.com>.
+
+========================================================================
+
+3.  Where do I get it?
+
+For now, the "official" sources will be:
+
+  Website:
+    http://www.panoptic.com/nsmysql/
+
+  Downloads:
+    ftp://ftp.panoptic.com/pub/nsmysql/
+
+To get AOLserver, go to:
+
+  http://www.aolserver.com/
+
+To get MySQL, go to:
+
+  http://www.tcx.se/
+
+========================================================================
+
+4.  How do I use it?
+
+Well, until there's time to write a more robust explanation, I'll give
+a brief walk-through and a sample for your nsd.tcl config file.
+Clearly, change the user, password, and datasource settings to match
+your setup.
+
+(Note:  If you're using this under Win32, please read win32/README,
+in addition to this README.)
+
+Step 1:  Make sure MySQL is properly installed and working.
+
+  This may seem like a silly step, but the number of times
+  I've had to deal with "my foo isn't working" when the
+  "foo" component *directly* depends on the "bar" component
+  working.
+
+Step 2:  Configure the Makefile (if necessary).
+
+  Since every system is potentially different, there may
+  be some need to slightly modify the provided Makefile.
+
+  The only thing you should really have to change in the
+  Makefile is the MYSQL_PREFIX variable.  By default, it's
+  set to /usr/local.  I believe this is the default prefix
+  for MySQL.  If you didn't use --prefix=/usr/local when
+  configuring MySQL, then you'll need to modify MYSQL_PREFIX
+  in nsmysql's Makefile.
+
+  Optionally, if you didn't install the MySQL libraries and
+  the include headers in the default places, you can specify
+  where they are installed by editing MYSQL_LIBDIR And
+  MYSQL_INCDIR, respectively.
+
+Step 3:  Compile the driver.
+
+  Simple.  If you're reading this README, chances are you're
+  already in the right directory.  If you're not, well then
+  cd into the $srcdir/nsmysql directory.  Then, type:
+
+  $ make
+
+  (Caveat:  I believe you must use GNU Make for this.)
+
+  Assuming it compiles, and produces the necessary nsmysql.so,
+  then you want to install it into the $srcdir/root directory:
+
+  $ make install
+
+  If you've already got an installation of AOLserver elsewhere,
+  and don't want to go overwriting it all with a new $srcdir/root,
+  then you can tell make to copy the driver to the right place:
+
+  $ make install ROOTDIR=/path/to/your/installation
+
+Step 4:  Tell AOLserver about it.
+
+  Now, you want to tell AOLserver about your handy-dandy MySQL
+  driver.  You need to edit your nsd.tcl (or whatever you named
+  your config. tcl file) and add the necessary stuff to make it
+  use the new nsmysql.so.  I'm too lazy to read the AOLserver
+  documentation to you, so go to http://www.aolserver.com/ and
+  read it yourself.  If you're too lazy to go read it, I've
+  included sample lines to stick in your nsd.tcl.
+
+  The format for the datasource parameter is
+ 
+    hostname:port:database
+
+  Note:  setting ns_param verbose on will cause lots of noise to
+  fill your server log, as it's how I debug the driver. :-) Doing a
+  [ns_db verbose $db on] in an ADP will turn it on as well.  Don't
+  forget to [ns_db verbose $db off] before the ADP ends, otherwise
+  all ADPs that use that MySQL connection in the pool will also
+  spit out debugging noise.
+
+========================== cut here ========================
+ns_section "ns/db/drivers"
+ns_param mysql        nsmysql.so
+
+ns_section "ns/db/pools"
+ns_param mysqldb      "The MySQL Database Pool"
+
+ns_section "ns/db/pool/mysqldb"
+ns_param driver       mysql
+ns_param connections  2
+ns_param user         dossy
+ns_param password     CHANGEME
+ns_param datasource   hostname.domain.com:3306:database_name
+ns_param verbose      off
+
+############################################################
+
+ns_section "ns/server/${servername}/db"
+ns_param DefaultPool  mysqldb
+ns_param Pools        *
+========================== cut here ========================
+
+========================================================================
+
+5.  Frequently Asked Questions (FAQs).
+
+None yet!
+
+========================================================================
+EOF

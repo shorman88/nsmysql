@@ -1,0 +1,94 @@
+========================================================================
+Panoptic AOLserver MySQL Driver v0.4
+an internal driver for AOLserver 3
+Copyright (C) 2000 Panoptic Computer Network
+========================================================================
+
+  Table of Contents
+
+  1.  What is this?
+  2.  Who is responsible?
+  3.  Where do I get it?
+  4.  How do I use it?
+  5.  Frequently Asked Questions (FAQs).
+
+========================================================================
+$Id: README,v 1.1 2000/10/25 01:14:19 dossy Exp $
+
+1.  What is this?
+
+This is the Win32 port of the Panoptic AOLserver MySQL driver.
+It has been successfully compiled and tested under:
+
+- AOLserver 3.0 RC1, MySQL 3.22.30, under Windows 98.
+- AOLserver 3.0, MySQL 3.22.30, under Windows 98.
+
+The tests were done using AOLserver on Windows 98 connecting
+to a MySQL 3.22.30 database running under Linux using the
+MySQL 3.23.13a Win32 client binaries.
+
+========================================================================
+
+2.  Who is responsible?
+
+Well, I guess since I put this together, I'm mostly responsible.
+If it doesn't work, try not to blame me, and instead submit
+patches.  :-)
+
+I'm Dossy <dossy@panoptic.com>.
+
+========================================================================
+
+3.  Where do I get it?
+
+For now, the "official" sources will be:
+
+  Website:
+    http://www.panoptic.com/nsmysql/
+
+  Downloads:
+    ftp://ftp.panoptic.com/pub/nsmysql/
+
+To get AOLserver, go to:
+
+  http://www.aolserver.com/
+
+AOLserver 3.0 binaries for Win32 can be downloaded from:
+
+  ftp://ftp.aolserver.com/3.0/aolserver3_0-win32-i386a.zip
+  ftp://ftp.aolserver.com/3.0/aolserver3_0-win32-i386a.exe
+
+To get MySQL, go to:
+
+  http://www.tcx.se/
+
+MySQL binaries for Win32 can be downloaded from:
+
+  http://web.mysql.com/download_win.html
+
+The MySQL 3.23.13a client binaries for Win32 can be downloaded from:
+
+  http://web.mysql.com/Downloads/Win32/winclients-3.23.13a.zip
+
+========================================================================
+
+5.  Frequently Asked Questions (FAQs).
+
+Q:  I get this strange "win32 error code: 1157" error in my server.log.
+    What does it mean?
+
+A:  You're seeing something like this in your server log:
+
+   Notice: loading: x:/path/to/aolserver/bin/nsmysql.so
+   Warning: could not load x:/path/to/aolsever/bin/nsmysql.so:  win32 error code: 1157
+   Error: nsd.db: could not load driver: mysql
+
+Chances are, this means you didn't copy the libmySQL.dll into your
+aolserver/bin directory.  This is LoadLibrary()'s way of saying that
+there were unresolved symbols when trying to dynamically load
+nsmysql.so, which is a DLL.  nsmysql.so is linked against libmySQL.dll,
+therefore it too needs to be loadable, and the easiest way to do this
+is to stick it in the aolserver/bin directory.
+
+========================================================================
+EOF
