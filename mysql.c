@@ -12,7 +12,7 @@
  * This driver is derived from the nssolid driver.
  */
 
-static char     rcsid[] = "$Id: mysql.c,v 1.5 2003/07/09 20:53:52 elizthom Exp $";
+static char     rcsid[] = "$Id: mysql.c,v 1.6 2005/10/06 20:16:33 shmooved Exp $";
 
 #include "ns.h"
 #include "nsdb.h"
@@ -769,7 +769,7 @@ Log(Ns_DbHandle *handle, MYSQL *mysql)
         Ns_Log(severity, "MySQL log message: (%u) '%s'", nErr, msg);
 
         if (handle != NULL) {
-            strcpy(handle->cExceptionCode, "Error");
+            sprintf(handle->cExceptionCode, "%u", nErr);
             Ns_DStringFree(&(handle->dsExceptionMsg));
             Ns_DStringAppend(&(handle->dsExceptionMsg), msg);
         }

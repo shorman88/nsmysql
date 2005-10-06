@@ -1,3 +1,18 @@
+2005-10-06  Nathan Folkman  <shmooved@aol.com>
+
+    * mysql.c: Fixed an issue where the MySQL error code was not
+    properly being set. Fix allows you to properly use the
+    ns_db exception command:
+
+    set exception [ns_db exception $handle]
+    set errorCode [lindex $exception 0]
+    set errorInfo [lindex $exception 1]
+
+    This could pose a backwards compatibility issue since the previous
+    version of this code was hard coded to always return the string
+    "Error" as the exception code.
+
+
 2003-07-09  Elizabeth Thomas  <eathomas93@aol.com>
 
     * mysql.c: add include of nsdb.h for aolserver 4.0 compatibility. 
