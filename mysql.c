@@ -161,7 +161,9 @@ Ns_MySQL_OpenDb(Ns_DbHandle *handle)
         ns_free(datasource);
         return NS_ERROR;
     }
-
+    
+  mysql_options(dbh, MYSQL_SET_CHARSET_NAME, MYSQL_AUTODETECT_CHARSET_NAME);
+  
     Ns_Log(Notice, "mysql_real_connect(%s, %s, %s, %s, %s)",
         host,
         handle->user == NULL ? "(null)" : handle->user,
@@ -177,8 +179,7 @@ Ns_MySQL_OpenDb(Ns_DbHandle *handle)
         ns_free(datasource);
         return NS_ERROR;
     }
-    //set the default characterset to utf8
-    mysql_set_character_set(dbh, "utf8");
+    
     ns_free(datasource);
 
     handle->connection = (void *) dbh;
