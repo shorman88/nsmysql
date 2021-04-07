@@ -161,7 +161,9 @@ Ns_MySQL_OpenDb(Ns_DbHandle *handle)
         ns_free(datasource);
         return NS_ERROR;
     }
-
+    
+  mysql_options(dbh, MYSQL_SET_CHARSET_NAME, MYSQL_AUTODETECT_CHARSET_NAME);
+  
     Ns_Log(Notice, "mysql_real_connect(%s, %s, %s, %s, %s)",
         host,
         handle->user == NULL ? "(null)" : handle->user,
@@ -177,7 +179,7 @@ Ns_MySQL_OpenDb(Ns_DbHandle *handle)
         ns_free(datasource);
         return NS_ERROR;
     }
-
+    
     ns_free(datasource);
 
     handle->connection = (void *) dbh;
